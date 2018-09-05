@@ -50,19 +50,28 @@ public class HMM1
 
 		for (int i = 0; i < N; i++) {
 			alphaMat[0][i] = piSequence[0][i] * BMat[i][OSequence[0]];
-			System.out.println(alphaMat[0][i]);
 		}
-		
-		// double[][] firstTransition = Matrix.multiply(initStateMat, transitionMat);
-		// firstTransition = Matrix.multiply(firstTransition, emissionMat);
 
-		// System.out.print(firstTransition.length + " " + firstTransition[0].length + " ");
+		for (int t = 1; t < T; t++) 
+		{
+			for(int i = 0; i < N; i++)
+			{
+				double temp = 0;
+				for (int j = 0; j < N; j++) 
+				{
+					temp += alphaMat[t-1][j] * AMat[j][i];
+				}
+				alphaMat[t][i] = temp * BMat[i][OSequence[t]];
+			}
+		}
 
-		// for (int i = 0; i < firstTransition[0].length; i++) 
-		// {
-		// 	System.out.printf("%f ", firstTransition[0][i]);
-		// }
+		double result = 0;
 
-		// System.out.println();
+		for (int i = 0; i < N; i++) 
+		{
+			result += alphaMat[T-1][i];
+		}
+
+		System.out.println(result);
 	}
 }
