@@ -10,22 +10,23 @@ public class HMMC
 
 		Scanner sc = new Scanner(System.in);
 
-		double[][] AMat = new double[][] {{0.54,0.26,0.2}, {0.19,0.53,0.28}, {0.22,0.18,0.6}}; 
-		// double[][] AMat = new double[][] {{0.7,0.05,0.25}, {0.1,0.8,0.1}, {0.2,0.3,0.5}};
-		// double[][] AMat = new double[][] {{0.3,0.3,0.4}, {0.3,0.4,0.3}, {0.4,0.3,0.3}}; 
+		// double[][] AMat = new double[][] {{0.54,0.26,0.2}, {0.19,0.53,0.28}, {0.22,0.18,0.6}}; 
+		// double[][] AMat = new double[][] {{0.333333333,0.333333333,0.333333333}, {0.333333333,0.333333333,0.333333333}, {0.333333333,0.333333333,0.333333333}};
+		// double[][] AMat = new double[][] {{0.54,0.06,0.2,0.1,0.1}, {0.19,0.53,0.08,0.1,0.1}, {0.22,0.18,0.4,0.1,0.1},{0.22,0.18,0.4,0.1,0.1},{0.22,0.18,0.4,0.1,0.1}}; 
+		double[][] AMat = new double[][] {{1.0,0.0,0.0}, {0.0,1.0,0.0}, {0.0,0.0,1.0}};
 		int AMatNumRows = AMat.length;
 		int AMatNumCols = AMat[0].length;
 
 		
 		double[][] BMat = new double[][] {{0.5,0.2,0.11,0.19}, {0.22,0.28,0.23,0.27}, {0.19,0.21,0.15,0.45}};
-		// double[][] BMat = new double[][] {{0.7,0.2,0.1,0.0}, {0.1,0.4,0.3,0.2}, {0,0.1,0.2,0.7}};
-		// double[][] BMat = new double[][] {{0.2,0.2,0.3,0.3}, {0.2,0.3,0.3,0.2}, {0.3,0.3,0.2,0.2}};
-
+		// double[][] BMat = new double[][] {{0.25,0.25,0.25,0.25}, {0.25,0.25,0.25,0.25}, {0.25,0.25,0.25,0.25}};
+		// double[][] BMat = new double[][] {{0.7,0.2,0.1,0.0},{0.1,0.4,0.3,0.2},{0.2,0.20,0.15,0.45},{0.19,0.26,0.10,0.45},{0.19,0.21,0.2,0.40}};
 		int BMatNumRows = BMat.length;
 		int BMatNumCols = BMat[0].length;
 		
-		double[] piSequence = new double[] {0.3,0.2,0.5};
-		// double[] piSequence = new double[] {1.0,0.0,0.0};
+		// double[] piSequence = new double[] {0.3,0.2,0.5};
+		// double[] piSequence = new double[] {0.333333333,0.333333333,0.333333333};
+		double[] piSequence = new double[] {0.0,0.0,1.0};
 		int piMatNumEl = piSequence.length;
 
 		int OSequenceNumEl = sc.nextInt();
@@ -35,10 +36,6 @@ public class HMMC
 		{
 			OSequence[i] = sc.nextInt();
 		}
-
-		double[][] AMat_original = new double[][] {{0.7,0.05,0.25}, {0.1,0.8,0.1}, {0.2,0.3,0.5}};
-		double[][] BMat_original = new double[][] {{0.7,0.2,0.1,0.0}, {0.1,0.4,0.3,0.2}, {0.0,0.1,0.2,0.7}};
-		double[] piSequence_original = new double[] {1.0,0.0,0.0};
 
 		System.out.println("Observation sequence length: " + OSequenceNumEl);
 
@@ -71,6 +68,8 @@ public class HMMC
 			}
 			else
 			{
+				System.out.println("logProb = " + logProb);
+				System.out.println("oldLogProb = " + oldLogProb);
 				break;
 			}
 		}
@@ -108,13 +107,6 @@ public class HMMC
 		for (int i = 0; i < piMatNumEl; i++) {
 			System.out.println(piSequence[i]);
 		}
-
-		double sum = calculateLeastSquares(AMat, AMat_original);
-		sum += calculateLeastSquares(BMat, BMat_original);
-
-		System.out.println();
-
-		System.out.println("Sum: " + sum);
 
 		System.out.println();
 	}
