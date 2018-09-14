@@ -3,6 +3,9 @@ import java.util.*;
 class Player {
 
     public Player() {
+        for(int i = 0; i < 6; i++){
+            this.speciesArray[i] = new HMM();
+        }
     }
 
     // have to change it later if it is not sufficient
@@ -10,7 +13,12 @@ class Player {
 
     // should only get bigger
     private int numBirds = 0;
-    private HMM[] hmmArray = new HMM[20];
+
+    //final array for all species
+    private HMM[] speciesArray = new HMM[6];
+
+    // holds oSeqs for one round
+    private int[][] tempOArray = new int[20][100];
 
     /**
      * Shoot!
@@ -36,36 +44,20 @@ class Player {
 
 
 
-	// add all new observations
-	if(numBirds > 0){	
-		for(int i = 0; i < numBirds; i++){
-			//System.err.println("i "+i);
-			hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
-		}
-	}
-	int newNumBirds = pState.getNumBirds();
-	if(newNumBirds > numBirds){
-		System.err.println("numBirds: "+numBirds);
-		System.err.println("newNumBirds: "+newNumBirds);
-		// create new HMMs for every Bird
-		for(int i = numBirds; i < newNumBirds; i++){
-			//System.err.println("init i "+i);
-			hmmArray[i] = new HMM(pState.getBird(i).getLastObservation());
-		}
-		numBirds = newNumBirds;
-	}
-
-        // if it is the first round, we will not shoot
-	System.err.println("numbBirds "+pState.getNumBirds());	
-	if(pState.getRound() == 0){
-		return cDontShoot;
-	}
-
-	System.err.println("Round "+pState.getRound());
-
-
-        // This line chooses not to shoot.
+	
+    if(pState.getRound() == 0){
+        // we decided to shoot not in round 0
         return cDontShoot;
+    }
+    else{
+        // it is time to hunt
+        
+        // first we wait for timestep 10 to get a meaningful result
+        
+    }
+
+    // This line chooses not to shoot.
+    return cDontShoot;
 
         // This line would predict that bird 0 will move right and shoot at it.
         // return Action(0, MOVE_RIGHT);
@@ -89,11 +81,15 @@ class Player {
          * each bird. This skeleton makes no guesses, better safe than sorry!
          */
 
+	System.err.println("Birds: "+pState.getNumBirds());
         int[] lGuess = new int[pState.getNumBirds()];
+	System.err.println();
         for (int i = 0; i < pState.getNumBirds(); ++i){
 		int random = (int)((Math.random() * 6));
             	lGuess[i] = random;
+		System.err.print(random+" ");
 	}
+
         return lGuess;
     }
 
@@ -118,6 +114,31 @@ class Player {
      * @param pDue time before which we must have returned
      */
     public void reveal(GameState pState, int[] pSpecies, Deadline pDue) {
+
+	    System.err.println("reveal Birds: "+pState.getNumBirds());
+	    System.err.println();
+	    
+        if(pState.getRound() == 0){
+            // add observations to the speciesArray
+            for(int i = 0; i < pState.getNumBirds(); i++){
+                for(int j = 0; j < 99; j++){
+                    speciesArray[pSpecies[i]].addObsSeq(pState.getBird(i).getObservation(j));
+                }
+            }
+            for(int i = 0; i < speciesArray.length; i++){
+                if(speciesArray[i].ready()){
+                    System.err.println("\nTRAIN: "+i+"\n");
+                    speciesArray[i].computeBaumWelch();
+                }
+            }
+        }
+
+        for(int i = 0; i < pSpecies.length; i++){
+		    System.err.print(pSpecies[i]+" ");
+	    }
+        System.err.println();
+        System.err.println("time: "+pDue.remainingMs());
+
     }
 
     public static final Action cDontShoot = new Action(-1, -1);

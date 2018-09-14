@@ -39,6 +39,22 @@ public class HMM
 		oSeq[ObsSeqCounter++] = newObs;
 	}
 
+	// returns whether the HMM does already have some meaningful information
+	public boolean ready(){
+		return (this.ObsSeqCounter > 98);
+	}
+
+	// computes the probability for a certain oSeq
+	public double computeProb(int[] seq){
+		double[] cSeq = new double[seq.length];
+		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seq, cSeq);
+		double prob = 0.0;
+		for(int i = 0; i < AMat.length; i++){
+			prob += alphaMatrix[seq.length - 1][i];
+		}
+		return prob;
+	}
+
 	public void computeBaumWelch()
 	{
 		double[] cSequence = new double[oSeq.length];
@@ -52,21 +68,28 @@ public class HMM
 		double[][] gammaMatrix = new double[oSeq.length][AMat.length];
 		double[][][] digammaMatrix = new double[oSeq.length][AMat.length][AMat.length];
 
-		for (int i = iters; i < maxIters; i++) 
-		{
-			alphaMatrix = alphaPass(AMat, BMat, piVec, oSeq, cSequence);
-			betaMatrix = betaPass(AMat, BMat, oSeq, cSequence);
-			computeGamma(AMat, BMat, oSeq, alphaMatrix, betaMatrix, gammaMatrix, digammaMatrix);
-			re_estimate(AMat, BMat, piVec, oSeq, gammaMatrix, digammaMatrix);
-			double logProb = computeLogProb(cSequence);
-			
-			if(logProb <= oldLogProb)
-			{
-				oldLogProb = logProb;
+		while(true)
+        {
+ 	    	alphaMatrix = alphaPass(AMat, BMat, piVec, oSeq, cSequence);
+    	    betaMatrix = betaPass(AMat, BMat, oSeq, cSequence);
+        	computeGamma(AMat, BMat, oSeq, alphaMatrix, betaMatrix, gammaMatrix, digammaMatrix);
+        	re_estimate(AMat, BMat, piVec, oSeq, gammaMatrix, digammaMatrix);
+        	double logProb = computeLogProb(cSequence);
+
+			//System.err.println("Baum-Welch Iteration: "+iters);
+	        iters++;
+    	    if(iters < maxIters && logProb > oldLogProb)
+        	{
+            	oldLogProb = logProb;
+    	    }
+        	else
+        	{
+            	// System.err.println("logProb = " + logProb);
+            	// System.err.println("oldLogProb = " + oldLogProb);
 				currentLogProb = oldLogProb;
-				break;
-			}
-		}
+            	break;
+            }
+        }
 	}
 
 	// returns the most likely emission to happen
@@ -79,9 +102,9 @@ public class HMM
 		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, oSeq, cSeq);
 		double[] obsProbVec = new double[BMat[0].length];
 		for(int j = 0; j < AMat.length; j++){
-			double prob;
+			double prob = 0;
 			for(int i = 0; i < AMat.length; i++){
-				prob += alphaMatrix[oSeq.length-1][i] * a[i][j];	
+				prob += alphaMatrix[oSeq.length-1][i] * AMat[i][j];	
 			}
 			for(int v = 0; v < obsProbVec.length; v++){
 				obsProbVec[v] += prob * BMat[j][v];
@@ -89,8 +112,8 @@ public class HMM
 		}
 
 		int mLikelyObs = -1;
-		double highestProb = DOUBLE.NEGATIVE_INFINITY;
-		for(int v = 0; v < obsProbVec; v++){
+		double highestProb = Double.NEGATIVE_INFINITY;
+		for(int v = 0; v < obsProbVec.length; v++){
 			if(obsProbVec[v] > highestProb){
 				highestProb = obsProbVec[v];
 				mLikelyObs = v;
