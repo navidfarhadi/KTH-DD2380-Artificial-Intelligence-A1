@@ -26,6 +26,14 @@ public class HMM
 		oSeq[ObsSeqCounter++] = firstObs;
 	}
 
+        public HMM()
+	{
+		AMat = new double[][] {{0.1,0.5,0.4}, {0.2,0.4,0.4}, {0.31,0.08,0.61}};
+		BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
+		piVec = new double[] {1.0,0.0,0.0};
+		oSeq = new int[10000];
+	}
+
 	public void addObsSeq(int newObs)
 	{
 		oSeq[ObsSeqCounter++] = newObs;
@@ -73,9 +81,23 @@ public class HMM
 		for(int j = 0; j < AMat.length; j++){
 			double prob;
 			for(int i = 0; i < AMat.length; i++){
-				
+				prob += alphaMatrix[oSeq.length-1][i] * a[i][j];	
+			}
+			for(int v = 0; v < obsProbVec.length; v++){
+				obsProbVec[v] += prob * BMat[j][v];
 			}
 		}
+
+		int mLikelyObs = -1;
+		double highestProb = DOUBLE.NEGATIVE_INFINITY;
+		for(int v = 0; v < obsProbVec; v++){
+			if(obsProbVec[v] > highestProb){
+				highestProb = obsProbVec[v];
+				mLikelyObs = v;
+			}
+		}
+
+		return mLikelyObs;
 	}
 
 
