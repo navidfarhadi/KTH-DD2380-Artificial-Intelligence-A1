@@ -6,7 +6,7 @@ class Player {
     }
 
     // have to change it later if it is not sufficient
-    private static int NUMBER_STATES = 3;
+    private static final int NUMBER_STATES = 3;
 
     // should only get bigger
     private int numBirds;
@@ -33,11 +33,12 @@ class Player {
          * This skeleton never shoots.
          */
 
+
 	HMM[] hmmArray = new HMM[100];
 
 	// add all new observations	
 	for(int i = 0; i < numBirds; i++){
-//		hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
+		hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
 	}
 	int newNumBirds = pState.getNumBirds();
 	if(newNumBirds > numBirds){
