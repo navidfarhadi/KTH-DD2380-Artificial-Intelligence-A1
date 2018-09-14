@@ -33,24 +33,29 @@ class Player {
          * This skeleton never shoots.
          */
 
-	List<HMM> hmmList = new LinkedList<HMM>();
+	HMM[] hmmArray = new HMM[100];
 
+	// add all new observations	
+	for(int i = 0; i < numBirds; i++){
+//		hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
+	}
 	int newNumBirds = pState.getNumBirds();
 	if(newNumBirds > numBirds){
-		System.out.println("numBirds: "+numBirds);
-		System.out.println("newNumBirds: "+newNumBirds);
+		System.err.println("numBirds: "+numBirds);
+		System.err.println("newNumBirds: "+newNumBirds);
 		// create new HMMs for every Bird
 		for(int i = numBirds; i < newNumBirds; i++){
-			/*double[][] AMat = new double[NUMBER_STATES][NUMBER_STATES];
-			double[][] BMAt = new double[NUMBER_STATES][NUMBER_STATES];
-			double[][] piVec = new double[];*/
-			//HMM hmm = HMM.init();
+			//HMM hmm = new HMM(pState.getBird(i);
 			//hmm.setOSeq();
 		}
 		numBirds = newNumBirds;
 	}
-        
-        
+
+        // if it is the first round, we will not shoot
+	
+	System.err.println("Round "+pState.getRound());
+
+
         // This line chooses not to shoot.
         return cDontShoot;
 
