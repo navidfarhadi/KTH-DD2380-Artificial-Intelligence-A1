@@ -4,6 +4,12 @@ class Player {
     public Player() {
     }
 
+    // have to change it later if it is not sufficient
+    private static int NUMBER_STATES = 3;
+
+    // should only get bigger
+    private int numBirds;
+    
     /**
      * Shoot!
      *
@@ -24,6 +30,23 @@ class Player {
          * Here you should write your clever algorithms to get the best action.
          * This skeleton never shoots.
          */
+
+	List<HMM> hmmList = new LinkedList<HMM>();
+
+	int newNumBirds = pState.getNumBirds();
+	if(newNumBirds > numBirds){
+		System.out.println("numBirds: "+numBirds);
+		System.out.println("newNumBirds: "+newNumBirds);
+		// create new HMMs for every Bird
+		for(int i = numBirds; i < newNumBirds; i++){
+			/*double[][] AMat = new double[NUMBER_STATES][NUMBER_STATES];
+			double[][] BMAt = new double[NUMBER_STATES][NUMBER_STATES];
+			double[][] piVec = new double[];*/
+			//HMM hmm = HMM.init();
+			//hmm.setOSeq();
+		}
+		numBirds = newNumBirds;
+	}
 
         // This line chooses not to shoot.
         return cDontShoot;
