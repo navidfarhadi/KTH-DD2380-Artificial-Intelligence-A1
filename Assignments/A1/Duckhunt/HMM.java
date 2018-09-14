@@ -17,12 +17,13 @@ public class HMM
 	private double currentLogProb;
 	private int ObsSeqCounter = 0;
 
-	public HMM()
+	public HMM(int firstObs)
 	{
 		AMat = new double[][] {{0.1,0.5,0.4}, {0.2,0.4,0.4}, {0.31,0.08,0.61}};
 		BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
 		piVec = new double[] {1.0,0.0,0.0};
-		oSeq = new int[100];
+		oSeq = new int[10000];
+		oSeq[ObsSeqCounter++] = firstObs;
 	}
 
 	public void addObsSeq(int newObs)
@@ -60,10 +61,23 @@ public class HMM
 		}
 	}
 
-	public void predictNextMove()
+	// returns the most likely emission to happen
+	public int predictNextMove()
 	{
 		//TODO
+		// we need to compare alpha - know distribution for every state
+		// from this state we want to get the most likely observation
+		double[] cSeq = new double[oSeq.length];
+		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, oSeq, cSeq);
+		double[] obsProbVec = new double[BMat[0].length];
+		for(int j = 0; j < AMat.length; j++){
+			double prob;
+			for(int i = 0; i < AMat.length; i++){
+				
+			}
+		}
 	}
+
 
 	public boolean compareHMM(HMM other)
 	{

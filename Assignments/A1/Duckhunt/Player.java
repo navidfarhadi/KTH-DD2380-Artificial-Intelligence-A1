@@ -9,8 +9,9 @@ class Player {
     private static final int NUMBER_STATES = 3;
 
     // should only get bigger
-    private int numBirds;
-    
+    private int numBirds = 0;
+    private HMM[] hmmArray = new HMM[20];
+
     /**
      * Shoot!
      *
@@ -34,11 +35,13 @@ class Player {
          */
 
 
-	HMM[] hmmArray = new HMM[100];
 
-	// add all new observations	
-	for(int i = 0; i < numBirds; i++){
-		hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
+	// add all new observations
+	if(numBirds > 0){	
+		for(int i = 0; i < numBirds; i++){
+			//System.err.println("i "+i);
+			hmmArray[i].addObsSeq(pState.getBird(i).getLastObservation());
+		}
 	}
 	int newNumBirds = pState.getNumBirds();
 	if(newNumBirds > numBirds){
@@ -46,14 +49,18 @@ class Player {
 		System.err.println("newNumBirds: "+newNumBirds);
 		// create new HMMs for every Bird
 		for(int i = numBirds; i < newNumBirds; i++){
-			//HMM hmm = new HMM(pState.getBird(i);
-			//hmm.setOSeq();
+			//System.err.println("init i "+i);
+			hmmArray[i] = new HMM(pState.getBird(i).getLastObservation());
 		}
 		numBirds = newNumBirds;
 	}
 
         // if it is the first round, we will not shoot
-	
+	System.err.println("numbBirds "+pState.getNumBirds());	
+	if(pState.getRound() == 0){
+		return cDontShoot;
+	}
+
 	System.err.println("Round "+pState.getRound());
 
 
@@ -83,8 +90,10 @@ class Player {
          */
 
         int[] lGuess = new int[pState.getNumBirds()];
-        for (int i = 0; i < pState.getNumBirds(); ++i)
-            lGuess[i] = Constants.SPECIES_UNKNOWN;
+        for (int i = 0; i < pState.getNumBirds(); ++i){
+		int random = (int)((Math.random() * 6));
+            	lGuess[i] = random;
+	}
         return lGuess;
     }
 
