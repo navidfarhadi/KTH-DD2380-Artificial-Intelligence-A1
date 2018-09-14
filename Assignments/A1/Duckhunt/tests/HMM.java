@@ -11,8 +11,8 @@ public class HMM
 	 * All other things have to be private attributes for each instance.
 	 */
 
-	private double[][] AMat;
-	private double[][] BMat;
+	public double[][] AMat;
+	public double[][] BMat;
 	private double[] piVec;
 	private Vector<Integer> oSeq;
 	private double currentLogProb;
@@ -56,6 +56,8 @@ public class HMM
 				break;
 			}
 		}
+
+
 	}
 
 	public void predictNextMove()
