@@ -1,3 +1,4 @@
+import java.util.*;
 
 class Player {
 
@@ -25,7 +26,8 @@ class Player {
      * @param pDue time before which we must have returned
      * @return the prediction of a bird we want to shoot at, or cDontShoot to pass
      */
-    public Action shoot(GameState pState, Deadline pDue) {
+    public Action shoot(GameState pState, Deadline pDue) 
+    {
         /*
          * Here you should write your clever algorithms to get the best action.
          * This skeleton never shoots.
@@ -47,7 +49,8 @@ class Player {
 		}
 		numBirds = newNumBirds;
 	}
-
+        
+        
         // This line chooses not to shoot.
         return cDontShoot;
 
