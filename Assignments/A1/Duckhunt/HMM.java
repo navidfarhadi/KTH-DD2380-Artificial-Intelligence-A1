@@ -1,4 +1,4 @@
-import java.util.Vector;
+import java.util.Arrays;
 
 public class HMM
 {
@@ -93,18 +93,18 @@ public class HMM
 	}
 
 	// returns the most likely emission to happen
-	public int predictNextMove()
+	public int predictNextMove(int[] seq)
 	{
 		//TODO
 		// we need to compare alpha - know distribution for every state
 		// from this state we want to get the most likely observation
-		double[] cSeq = new double[oSeq.length];
-		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, oSeq, cSeq);
+		double[] cSeq = new double[seq.length];
+		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seq, cSeq);
 		double[] obsProbVec = new double[BMat[0].length];
 		for(int j = 0; j < AMat.length; j++){
 			double prob = 0;
 			for(int i = 0; i < AMat.length; i++){
-				prob += alphaMatrix[oSeq.length-1][i] * AMat[i][j];	
+				prob += alphaMatrix[seq.length-1][i] * AMat[i][j];	
 			}
 			for(int v = 0; v < obsProbVec.length; v++){
 				obsProbVec[v] += prob * BMat[j][v];

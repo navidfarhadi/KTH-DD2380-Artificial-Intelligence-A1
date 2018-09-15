@@ -6,6 +6,7 @@ class Player {
         for(int i = 0; i < 6; i++){
             this.speciesArray[i] = new HMM();
         }
+        //Arrays.fill(birdShot,-1);
     }
 
     // have to change it later if it is not sufficient
@@ -19,6 +20,11 @@ class Player {
 
     // holds oSeqs for one round
     private int[][] tempOArray = new int[20][100];
+    private int tempOArrayCounter = 0;
+    // if we successfully shot a bird there will the species
+    private int[] birdShot = new int[20];
+
+    private int currRound = 0;
 
     /**
      * Shoot!
@@ -42,19 +48,54 @@ class Player {
          * This skeleton never shoots.
          */
 
+        if(pState.getRound() != currRound){
+            // we are in a new round and need to refresh our data
+            currRound = pState.getRound();
+            tempOArray = new int[20][100];
+            Arrays.fill(birdShot,-1);
+        }
 
+        // store every emission in the array
+
+        for(int i = tempOArrayCounter; i < (tempOArrayCounter + pState.getNumNewTurns()); i++){
+            for(int j = 0; j < pState.getNumBirds(); j++){
+                tempOArray[i][j] = pState.getBird(i).getObservation(i);
+            }
+        }
 
 	
-    if(pState.getRound() == 0){
-        // we decided to shoot not in round 0
-        return cDontShoot;
-    }
-    else{
-        // it is time to hunt
+        if(pState.getRound() == 0){
+            // we decided to shoot not in round 0
+            return cDontShoot;
+        }
+        else{
+            // it is time to hunt
         
-        // first we wait for timestep 10 to get a meaningful result
+            // first we wait for timestep 10 to get a meaningful result
+            if(currRound > 9){
+                // let's shoot
+                for(int j = 0; j < 20; j++){
+                    if(birdShot[j] > -1){
+                        double prob = Double.NEGATIVE_INFINITY;
+                        int probIndex = -1;
+                        for(int i = 0; i < speciesArray.length; i++){
+                            if(speciesArray[i].ready()){
+                                double tempProb = speciesArray[i].computeProb(Arrays.copyOfRange(tempOArray[j],0,currRound));
+                                if(tempProb > prob){
+                                    prob =tempProb;
+                                    probIndex = i;
+                                }
+                            }
+                        }
+                        // CAN BE DONE BETTER
+                        int move = speciesArray[probIndex].predictNextMove(Arrays.copyOfRange(tempOArray[j],0,currRound));
+                        // has to be done better
+                        return new Action(j,move);
+                    }
+                }
+            }
         
-    }
+        }
 
     // This line chooses not to shoot.
     return cDontShoot;
