@@ -22,7 +22,7 @@ class Player {
     private int[][] tempOArray = new int[20][100];
     private int tempOArrayCounter = 0;
     // if we successfully shot a bird there will the species
-    private int[] birdShot = new int[20];
+    private int[] birdShot;
 
     private int currRound = 0;
 
@@ -52,16 +52,20 @@ class Player {
             // we are in a new round and need to refresh our data
             currRound = pState.getRound();
             tempOArray = new int[20][100];
+            birdShot = new int[pState.getNumBirds()];
             Arrays.fill(birdShot,-1);
+            tempOArrayCounter = 0;
         }
 
         // store every emission in the array
 
         for(int i = tempOArrayCounter; i < (tempOArrayCounter + pState.getNumNewTurns()); i++){
             for(int j = 0; j < pState.getNumBirds(); j++){
-                tempOArray[i][j] = pState.getBird(i).getObservation(i);
+                tempOArray[j][i] = pState.getBird(j).getObservation(i);
             }
         }
+
+        tempOArrayCounter += pState.getNumNewTurns();
 
 	
         if(pState.getRound() == 0){
@@ -72,7 +76,7 @@ class Player {
             // it is time to hunt
         
             // first we wait for timestep 10 to get a meaningful result
-            if(currRound > 9){
+            /*if(currRound > 9){
                 // let's shoot
                 for(int j = 0; j < 20; j++){
                     if(birdShot[j] > -1){
@@ -93,7 +97,7 @@ class Player {
                         return new Action(j,move);
                     }
                 }
-            }
+            }*/
         
         }
 
@@ -122,14 +126,45 @@ class Player {
          * each bird. This skeleton makes no guesses, better safe than sorry!
          */
 
-	System.err.println("Birds: "+pState.getNumBirds());
-        int[] lGuess = new int[pState.getNumBirds()];
-	System.err.println();
-        for (int i = 0; i < pState.getNumBirds(); ++i){
-		int random = (int)((Math.random() * 6));
-            	lGuess[i] = random;
-		System.err.print(random+" ");
-	}
+	    int[] lGuess = new int[pState.getNumBirds()];
+	    if(pState.getRound() == 0){
+            // random guesses in round 0
+            for (int i = 0; i < pState.getNumBirds(); ++i){
+        	    lGuess[i] = (int)((Math.random() * 6));
+	        }
+        }
+        else{
+            // for every other round we use our knowledge
+            lGuess = birdShot;
+            for(int i = 0; i < pState.getNumBirds(); i++){
+                if(birdShot[i] == -1){
+                    // otherwise we already shot that bird correctly
+                    // so we already know its species
+                    int maxIndex = -1;
+                    double maxProb = Double.NEGATIVE_INFINITY;
+                    int[] obsArray = Arrays.copyOfRange(tempOArray[i],0,99);
+                    //printArray(obsArray);
+                    for(int j = 0; j < speciesArray.length; j++){
+                        if(speciesArray[j].ready()){
+                            double prob = speciesArray[j].computeProb(obsArray);
+                            //System.err.println("Prob: "+prob);
+                            if(prob > maxProb){
+                                maxProb = prob;
+                                maxIndex = j;
+                            }
+                        }
+                    }
+                    System.err.println();
+                    lGuess[i] = maxIndex;
+                }
+            }
+        }
+
+        System.err.println("Guesses for round "+pState.getRound()+"\n");
+        for(int i = 0; i < pState.getNumBirds(); i++){
+            System.err.print(lGuess[i] + " ");
+        }
+        
 
         return lGuess;
     }
@@ -146,6 +181,12 @@ class Player {
         System.err.println("HIT BIRD!!!");
     }
 
+    public void printArray(int[] array){
+        for(int i = 0; i < array.length; i++){
+            System.err.print(array[i] + " ");
+        }
+    }
+
     /**
      * If you made any guesses, you will find out the true species of those
      * birds through this function.
@@ -156,10 +197,11 @@ class Player {
      */
     public void reveal(GameState pState, int[] pSpecies, Deadline pDue) {
 
-	    System.err.println("reveal Birds: "+pState.getNumBirds());
+	    //System.err.println("reveal Birds: "+pState.getNumBirds());
 	    System.err.println();
 	    
-        if(pState.getRound() == 0){
+        
+        /*if(pState.getRound() == 0){
             // add observations to the speciesArray
             for(int i = 0; i < pState.getNumBirds(); i++){
                 for(int j = 0; j < 99; j++){
@@ -168,11 +210,17 @@ class Player {
             }
             for(int i = 0; i < speciesArray.length; i++){
                 if(speciesArray[i].ready()){
-                    System.err.println("\nTRAIN: "+i+"\n");
+                    //System.err.println("\nTRAIN: "+i+"\n");
                     speciesArray[i].computeBaumWelch();
                 }
             }
+        }*/
+
+        for(int i = 0; i < pState.getNumBirds(); i++){
+            speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
         }
+
+        System.err.println("Reveal for round "+pState.getRound());
 
         for(int i = 0; i < pSpecies.length; i++){
 		    System.err.print(pSpecies[i]+" ");

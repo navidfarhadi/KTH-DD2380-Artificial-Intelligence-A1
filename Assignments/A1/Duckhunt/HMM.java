@@ -16,14 +16,16 @@ public class HMM
 	private int[] oSeq;
 	private double currentLogProb;
 	private int ObsSeqCounter = 0;
+	private boolean trained;
 
 	public HMM(int firstObs)
 	{
-		AMat = new double[][] {{0.1,0.5,0.4}, {0.2,0.4,0.4}, {0.31,0.08,0.61}};
-		BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
-		piVec = new double[] {1.0,0.0,0.0};
+		AMat = new double[][] {{0.1,0.5,0.4,0.0}, {0.2,0.4,0.4,0.0}, {0.31,0.08,0.61,0.0}};
+		BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14},{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+		piVec = new double[] {1.0,0.0,0.0,0.0};
 		oSeq = new int[10000];
 		oSeq[ObsSeqCounter++] = firstObs;
+		trained = false;
 	}
 
         public HMM()
@@ -32,6 +34,7 @@ public class HMM
 		BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
 		piVec = new double[] {1.0,0.0,0.0};
 		oSeq = new int[10000];
+		trained = false;
 	}
 
 	public void addObsSeq(int newObs)
@@ -41,13 +44,12 @@ public class HMM
 
 	// returns whether the HMM does already have some meaningful information
 	public boolean ready(){
-		return (this.ObsSeqCounter > 98);
+		return trained;
 	}
 
 	// computes the probability for a certain oSeq
 	public double computeProb(int[] seq){
-		double[] cSeq = new double[seq.length];
-		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seq, cSeq);
+		double[][] alphaMatrix = alphaPass_ws(AMat, BMat, piVec, seq);
 		double prob = 0.0;
 		for(int i = 0; i < AMat.length; i++){
 			prob += alphaMatrix[seq.length - 1][i];
@@ -57,6 +59,7 @@ public class HMM
 
 	public void computeBaumWelch()
 	{
+		trained = true;
 		double[] cSequence = new double[oSeq.length];
 
 		int maxIters = 100;
@@ -74,6 +77,44 @@ public class HMM
     	    betaMatrix = betaPass(AMat, BMat, oSeq, cSequence);
         	computeGamma(AMat, BMat, oSeq, alphaMatrix, betaMatrix, gammaMatrix, digammaMatrix);
         	re_estimate(AMat, BMat, piVec, oSeq, gammaMatrix, digammaMatrix);
+        	double logProb = computeLogProb(cSequence);
+
+			//System.err.println("Baum-Welch Iteration: "+iters);
+	        iters++;
+    	    if(iters < maxIters && logProb > oldLogProb)
+        	{
+            	oldLogProb = logProb;
+    	    }
+        	else
+        	{
+            	// System.err.println("logProb = " + logProb);
+            	// System.err.println("oldLogProb = " + oldLogProb);
+				currentLogProb = oldLogProb;
+            	break;
+            }
+        }
+	}
+
+	public void computeBaumWelch(int[] seq)
+	{
+		trained = true;
+		double[] cSequence = new double[seq.length];
+
+		int maxIters = 100;
+		int iters = 0;
+		double oldLogProb = Double.NEGATIVE_INFINITY;
+
+		double[][] alphaMatrix;
+		double[][] betaMatrix;
+		double[][] gammaMatrix = new double[seq.length][AMat.length];
+		double[][][] digammaMatrix = new double[seq.length][AMat.length][AMat.length];
+
+		while(true)
+        {
+ 	    	alphaMatrix = alphaPass(AMat, BMat, piVec, seq, cSequence);
+    	    betaMatrix = betaPass(AMat, BMat, seq, cSequence);
+        	computeGamma(AMat, BMat, seq, alphaMatrix, betaMatrix, gammaMatrix, digammaMatrix);
+        	re_estimate(AMat, BMat, piVec, seq, gammaMatrix, digammaMatrix);
         	double logProb = computeLogProb(cSequence);
 
 			//System.err.println("Baum-Welch Iteration: "+iters);
@@ -177,6 +218,36 @@ public class HMM
 			{
 				alphaMatrix[t][i] *= cSequence[t];
 			}
+		}
+
+		return alphaMatrix;
+	}
+
+	// is an implementation of the alpha pass without scaling
+	// FOR BAUM-WELCH, DO NOT USE THIS IMPLEMENTATION
+	private double[][] alphaPass_ws(double[][] AMat, double[][] BMat, double[] piVec, int[] oSeq)
+	{
+		double[][] alphaMatrix = new double[oSeq.length][AMat.length];
+
+		for (int i = 0; i < AMat.length; i++) 
+		{
+			alphaMatrix[0][i] = piVec[i] * BMat[i][oSeq[0]];
+		}
+
+		for (int t = 1; t < oSeq.length; t++) 
+		{
+			for (int i = 0; i < AMat.length; i++) 
+			{
+				alphaMatrix[t][i] = 0;
+				
+				for (int j = 0; j < AMat.length; j++) 
+				{
+					alphaMatrix[t][i] += alphaMatrix[t-1][j] * AMat[j][i];
+				}
+
+				alphaMatrix[t][i] *= BMat[i][oSeq[t]];
+			}
+
 		}
 
 		return alphaMatrix;
