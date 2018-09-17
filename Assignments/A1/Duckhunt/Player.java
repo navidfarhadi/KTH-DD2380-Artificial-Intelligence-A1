@@ -154,9 +154,10 @@ class Player {
                             }
                         }
                     }
-                    System.err.println();
+                    //System.err.println();
                     lGuess[i] = maxIndex;
                 }
+                //System.err.println();
             }
         }
 
@@ -217,7 +218,10 @@ class Player {
         }*/
 
         for(int i = 0; i < pState.getNumBirds(); i++){
-            speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
+            if(!speciesArray[pSpecies[i]].ready()){
+                System.err.println("TRAIN model "+pSpecies[i]);
+                speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
+            }
         }
 
         System.err.println("Reveal for round "+pState.getRound());
