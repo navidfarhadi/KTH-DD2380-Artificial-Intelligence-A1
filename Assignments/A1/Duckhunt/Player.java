@@ -3,6 +3,7 @@ import java.util.*;
 class Player {
 
     public Player() {
+        HMM.InitStates(5);
         for(int i = 0; i < 6; i++){
             this.speciesArray[i] = new HMM();
         }
@@ -154,9 +155,13 @@ class Player {
                             }
                         }
                     }
+                    System.err.println("Prob: "+maxProb);
                     //System.err.println();
                     lGuess[i] = maxIndex;
+                }else{
+                    lGuess[i] = birdShot[i];
                 }
+
                 //System.err.println();
             }
         }
@@ -218,10 +223,15 @@ class Player {
         }*/
 
         for(int i = 0; i < pState.getNumBirds(); i++){
-            if(!speciesArray[pSpecies[i]].ready()){
-                System.err.println("TRAIN model "+pSpecies[i]);
-                speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
-            }
+            //if(speciesArray[pSpecies[i]].ready()) continue;
+            //System.err.println("TRAIN model "+pSpecies[i]);
+            speciesArray[pSpecies[i]].addSeq(Arrays.copyOfRange(tempOArray[i],0,99));
+            //speciesArray[pSpecies[i]].computeBaumWelch();
+            //speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
+        }
+
+        for(int i = 0; i < speciesArray.length; i++) {
+            speciesArray[i].computeBaumWelch();
         }
 
         System.err.println("Reveal for round "+pState.getRound());
