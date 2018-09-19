@@ -3,7 +3,7 @@ import java.util.*;
 class Player {
 
     public Player() {
-        HMM.InitStates(3);
+        HMM.InitStates(5);
         for(int i = 0; i < 6; i++){
             this.speciesArray[i] = new HMM();
         }
@@ -23,6 +23,7 @@ class Player {
     private int[] birdShot;
 
     private int currRound = -1;
+    private int counter = 0;
     /**
      * Shoot!
      *
@@ -49,16 +50,53 @@ class Player {
             // we are in a new round and need to refresh our data
             currRound = pState.getRound();
             birdShot = new int[20];
+            counter = 0;
             Arrays.fill(birdShot,-1);
         }
 
+        counter += pState.getNumNewTurns();
+
 	
-        if(pState.getRound() == 0){
+        if(pState.getRound() == 0 || !speciesArray[Constants.SPECIES_BLACK_STORK].ready() || counter < (100 - 10 * pState.getNumNewTurns())){
             // we decided to shoot not in round 0
             return cDontShoot;
         }
         else{
             // it is time to hunt
+            double maxProb = Double.NEGATIVE_INFINITY;
+            int maxIndex = -1;
+            int maxSpecies = -1;
+            int[] maxSeq = null;
+            for(int i = 0; i < pState.getNumBirds(); i++) {
+                if(pState.getBird(i).isDead()) continue;
+                int[] seq = new int[pState.getBird(i).getSeqLength()];
+                for(int f = 0; f < seq.length; f++) {
+                    seq[f] = pState.getBird(i).getObservation(f);
+                }
+
+                double prob = Double.NEGATIVE_INFINITY;
+                int probIndex = -1;
+                for(int f = 0; f < speciesArray.length; f++) {
+                    if(!speciesArray[f].ready()) continue;
+                    double tempProb = speciesArray[f].computeProb(seq);
+                    if(tempProb > prob) {
+                        prob = tempProb;
+                        probIndex = f;
+                    }
+                }
+                if(probIndex >= 0 && prob > maxProb && probIndex != Constants.SPECIES_BLACK_STORK) {
+                    maxProb = prob;
+                    maxIndex = i;
+                    maxSpecies = probIndex;
+                    maxSeq = seq;
+                }
+            }
+
+            if(maxIndex < 0) return cDontShoot;
+
+            int move = speciesArray[maxSpecies].predictNextMove(maxSeq);
+            System.err.println("Shooting on " + maxIndex + ", Species " + maxSpecies + ", Prob " + maxProb);
+            return new Action(maxIndex, move);
         
             // first we wait for timestep 10 to get a meaningful result
             /*if(currRound > 9){
@@ -87,7 +125,7 @@ class Player {
         }
 
     // This line chooses not to shoot.
-    return cDontShoot;
+//    return cDontShoot;
 
         // This line would predict that bird 0 will move right and shoot at it.
         // return Action(0, MOVE_RIGHT);
@@ -136,6 +174,7 @@ class Player {
                     // so we already know its species
                     int maxIndex = -1;
                     double maxProb = Double.NEGATIVE_INFINITY;
+                    double secProb = 0.0;
                     int[] obsArray = getBirdSeq(pState.getBird(i));
                     //printArray(obsArray);
                     for(int j = 0; j < speciesArray.length; j++){
@@ -144,12 +183,16 @@ class Player {
                             //double prob = 0;
                             //System.err.println("Prob: "+prob);
                             if(prob > maxProb){
+                                secProb = maxProb;
                                 maxProb = prob;
                                 maxIndex = j;
+                            } else if(prob > secProb) {
+                                secProb = prob;
                             }
                         }
                     }
-                    //System.err.println("Prob: "+maxProb);
+                    double safeness = (maxProb - secProb) / maxProb;
+                    //System.err.println("Safeness: "+safeness);
                     //System.err.println();
                     lGuess[i] = maxIndex;
                 }else{
