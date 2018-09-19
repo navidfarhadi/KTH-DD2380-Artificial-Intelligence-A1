@@ -3,7 +3,7 @@ import java.util.*;
 class Player {
 
     public Player() {
-        HMM.InitStates(5);
+        HMM.InitStates(3);
         for(int i = 0; i < 6; i++){
             this.speciesArray[i] = new HMM();
         }
@@ -19,14 +19,10 @@ class Player {
     //final array for all species
     private HMM[] speciesArray = new HMM[6];
 
-    // holds oSeqs for one round
-    private int[][] tempOArray = new int[20][100];
-    private int tempOArrayCounter = 0;
     // if we successfully shot a bird there will the species
     private int[] birdShot;
 
-    private int currRound = 0;
-
+    private int currRound = -1;
     /**
      * Shoot!
      *
@@ -52,21 +48,9 @@ class Player {
         if(pState.getRound() != currRound){
             // we are in a new round and need to refresh our data
             currRound = pState.getRound();
-            tempOArray = new int[20][100];
-            birdShot = new int[pState.getNumBirds()];
+            birdShot = new int[20];
             Arrays.fill(birdShot,-1);
-            tempOArrayCounter = 0;
         }
-
-        // store every emission in the array
-
-        for(int i = tempOArrayCounter; i < (tempOArrayCounter + pState.getNumNewTurns()); i++){
-            for(int j = 0; j < pState.getNumBirds(); j++){
-                tempOArray[j][i] = pState.getBird(j).getObservation(i);
-            }
-        }
-
-        tempOArrayCounter += pState.getNumNewTurns();
 
 	
         if(pState.getRound() == 0){
@@ -109,6 +93,15 @@ class Player {
         // return Action(0, MOVE_RIGHT);
     }
 
+    private int[] getBirdSeq(Bird b)
+    {
+        int[] ret = new int[b.getSeqLength()];
+        for(int i = 0; i < ret.length; i++) {
+            ret[i] = b.getObservation(i);
+        }
+        return ret;
+    }
+
     /**
      * Guess the species!
      * This function will be called at the end of each round, to give you
@@ -136,18 +129,19 @@ class Player {
         }
         else{
             // for every other round we use our knowledge
-            lGuess = birdShot;
+            //lGuess = birdShot;
             for(int i = 0; i < pState.getNumBirds(); i++){
-                if(birdShot[i] == -1){
+                if(pState.getBird(i).isAlive()){
                     // otherwise we already shot that bird correctly
                     // so we already know its species
                     int maxIndex = -1;
                     double maxProb = Double.NEGATIVE_INFINITY;
-                    int[] obsArray = Arrays.copyOfRange(tempOArray[i],0,99);
+                    int[] obsArray = getBirdSeq(pState.getBird(i));
                     //printArray(obsArray);
                     for(int j = 0; j < speciesArray.length; j++){
                         if(speciesArray[j].ready()){
                             double prob = speciesArray[j].computeProb(obsArray);
+                            //double prob = 0;
                             //System.err.println("Prob: "+prob);
                             if(prob > maxProb){
                                 maxProb = prob;
@@ -155,7 +149,7 @@ class Player {
                             }
                         }
                     }
-                    System.err.println("Prob: "+maxProb);
+                    //System.err.println("Prob: "+maxProb);
                     //System.err.println();
                     lGuess[i] = maxIndex;
                 }else{
@@ -204,7 +198,7 @@ class Player {
     public void reveal(GameState pState, int[] pSpecies, Deadline pDue) {
 
 	    //System.err.println("reveal Birds: "+pState.getNumBirds());
-	    System.err.println();
+        System.err.println();
 	    
         
         /*if(pState.getRound() == 0){
@@ -223,16 +217,19 @@ class Player {
         }*/
 
         for(int i = 0; i < pState.getNumBirds(); i++){
+            if(pSpecies[i] == -1 || pState.getBird(i).isDead()) continue;
             //if(speciesArray[pSpecies[i]].ready()) continue;
             //System.err.println("TRAIN model "+pSpecies[i]);
-            speciesArray[pSpecies[i]].addSeq(Arrays.copyOfRange(tempOArray[i],0,99));
-            //speciesArray[pSpecies[i]].computeBaumWelch();
+            speciesArray[pSpecies[i]].addSeq(getBirdSeq(pState.getBird(i)));
             //speciesArray[pSpecies[i]].computeBaumWelch(Arrays.copyOfRange(tempOArray[i],0,99));
         }
-
         for(int i = 0; i < speciesArray.length; i++) {
             speciesArray[i].computeBaumWelch();
         }
+
+        /*for(int i = 0; i < speciesArray.length; i++) {
+            speciesArray[i].computeBaumWelch();
+        }*/
 
         System.err.println("Reveal for round "+pState.getRound());
 

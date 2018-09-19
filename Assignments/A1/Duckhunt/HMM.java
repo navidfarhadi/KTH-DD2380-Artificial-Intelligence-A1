@@ -30,7 +30,7 @@ public class HMM
 		double[][] AMat = AMatTemplate;
 		double[][] BMat = BMatTemplate;
 
-		System.err.println("HMM A INIT");
+		//System.err.println("HMM A INIT");
 		for(int i = 0; i < states; i++) {
 			double def = 1.0 / states;
 			double var = def * 0.8;
@@ -38,17 +38,17 @@ public class HMM
 				double r = (Math.random() * 2 - 1) * var;
 				AMat[i][f - 1] = def - r;
 				AMat[i][f] = def + r;
-				System.err.print(AMat[i][f - 1] + " ");
-				System.err.print(AMat[i][f] + " ");
+				//System.err.print(AMat[i][f - 1] + " ");
+				//System.err.print(AMat[i][f] + " ");
 			}
 			if(states % 2 != 0) {
 				AMat[i][states - 1] = def;
-				System.err.println(AMat[i][states - 1]);
+				//System.err.println(AMat[i][states - 1]);
 			}
 		}
-		System.err.println();
+		//System.err.println();
 
-		System.err.println("HMM B INIT");
+		//System.err.println("HMM B INIT");
 		for(int i = 0; i < states; i++) {
 			double def = 1.0 / 9;
 			double var = def * 0.8;
@@ -56,36 +56,42 @@ public class HMM
 				double r = (Math.random() * 2 - 1) * var;
 				BMat[i][f - 1] = def - r;
 				BMat[i][f] = def + r;
-				System.err.print(BMat[i][f - 1] + " ");
-				System.err.print(BMat[i][f] + " ");
+				//System.err.print(BMat[i][f - 1] + " ");
+				//System.err.print(BMat[i][f] + " ");
 			}
 			BMat[i][9-1] = def;
-			System.err.println(BMat[i][9 - 1]);
+			//System.err.println(BMat[i][9 - 1]);
 		}
-		System.err.println();
+		//System.err.println();
 	}
 
     public HMM()
 	{
 		AMat = new double[states][states];
+		BMat = new double[states][9];
+		piVec = new double[states];
+
+		resetStates();
+		//AMat = new double[][] {{0.1,0.5,0.4}, {0.2,0.4,0.4}, {0.31,0.08,0.61}};
+		//BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
+		//piVec = new double[] {1.0,0.0,0.0};
+		trained = false;
+	}
+
+	public void resetStates()
+	{
 		for(int i = 0; i < states; i++) {
 			for(int f = 0; f < states; f++) {
 				AMat[i][f] = AMatTemplate[i][f];
 			}
 		}
-
-		BMat = new double[states][9];
 		for(int i = 0; i < states; i++) {
 			for(int f = 0; f < 9; f++) {
 				BMat[i][f] = BMatTemplate[i][f];
 			}
 		}
-		//AMat = new double[][] {{0.1,0.5,0.4}, {0.2,0.4,0.4}, {0.31,0.08,0.61}};
-		//BMat = new double[][] {{0.12,0.15,0.17,0.06,0.06,0.21,0.02,0.07,0.14}, {0.22,0.05,0.07,0.06,0.26,0.01,0.12,0.17,0.04}, {0.02,0.01,0.27,0.1,0.16,0.11,0.12,0.07,0.14}};
-		//piVec = new double[] {1.0,0.0,0.0};
 		piVec = new double[states];
 		piVec[0] = 1;
-		trained = false;
 	}
 
 	public void addSeq(int[] newSeq){
@@ -112,6 +118,7 @@ public class HMM
 	{
 		if(oSeqs.size() == 0 || !dirtyBit) return;
 		trained = true;
+		resetStates();
 		double[] cSequence = new double[oSeqs.get(0).length];
 
 		int maxIters = 100;
@@ -232,10 +239,13 @@ public class HMM
 				}
 
 				double factor = 0;
+				int counter = 0;
 				for(int[] oSeq : oSeqs) {
+					if(t >=oSeq.length) continue;
 					factor += BMat[i][oSeq[t]];
+					counter++;
 				}
-				factor /= oSeqs.size();
+				factor /= counter;
 
 				alphaMatrix[t][i] *= factor;
 				cSequence[t] += alphaMatrix[t][i];
@@ -297,11 +307,14 @@ public class HMM
 				betaMatrix[t][i] = 0.0;
 				for (int j = 0; j < AMat.length; j++) 
 				{
+					int counter = 0;
 					double factor = 0;
 					for(int[] oSeq : oSeqs) {
+						if(t + 1 >= oSeq.length) continue;
 						factor += BMat[j][oSeq[t+1]];
+						counter++;
 					}
-					factor /= oSeqs.size();
+					factor /= counter;
 					betaMatrix[t][i] += AMat[i][j] * factor * betaMatrix[t+1][j];
 				}
 
@@ -323,11 +336,14 @@ public class HMM
 			{
 				for (int j = 0; j < AMat.length; j++) 
 				{
+					int counter = 0;
 					double factor = 0;
 					for(int[] oSeq : oSeqs) {
+						if(t + 1 >= oSeq.length) continue;
 						factor += BMat[j][oSeq[t+1]];
+						counter++;
 					}
-					factor /= oSeqs.size();
+					factor /= counter;
 					denom += alphaMatrix[t][i] * AMat[i][j] * factor * betaMatrix[t+1][j];	
 				}	
 			}
@@ -337,11 +353,14 @@ public class HMM
 				gammaMatrix[t][i] = 0;
 				for (int j = 0; j < AMat.length; j++) 
 				{
+					int counter = 0;
 					double factor = 0;
 					for(int[] oSeq : oSeqs) {
+						if(t + 1 >= oSeq.length) continue;
 						factor += BMat[j][oSeq[t+1]];
+						counter++;
 					}
-					factor /= oSeqs.size();
+					factor /= counter;
 					digammaMatrix[t][i][j] = (alphaMatrix[t][i] * AMat[i][j] * factor * betaMatrix[t+1][j]) / denom;
 					gammaMatrix[t][i] += digammaMatrix[t][i][j];
 				}
@@ -395,7 +414,7 @@ public class HMM
 				{
 					boolean found = false;
 					for(int[] oSeq : oSeqs) {
-						if(oSeq[t] == j) {
+						if(t < oSeq.length && oSeq[t] == j) {
 							found = true;
 							break;
 						}
