@@ -196,15 +196,15 @@ public class HMM
 		//TODO
 		// we need to compare alpha - know distribution for every state
 		// from this state we want to get the most likely observation
-		Vector<int[]> seqs = new Vector<>(1);
-		seqs.add(seq);
-		double[] cSeq = new double[seq.length];
+		// Vector<int[]> seqs = new Vector<>(1);
+		// seqs.add(seq);
+		// double[] cSeq = new double[seq.length];
 		//double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seqs, cSeq);
 		double[] obsProbVec = new double[BMat[0].length];
 		for(int j = 0; j < AMat.length; j++){
 			double prob = 0;
 			for(int i = 0; i < AMat.length; i++){
-				prob += alphaMatrix[seq.length-1][i] * AMat[i][j];	
+				prob += alphaMatrix[oSeqs.get(0).length-1][i] * AMat[i][j];	
 			}
 			for(int v = 0; v < obsProbVec.length; v++){
 				obsProbVec[v] += prob * BMat[j][v];
