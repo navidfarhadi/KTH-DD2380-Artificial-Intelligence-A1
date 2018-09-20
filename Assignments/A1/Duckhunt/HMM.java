@@ -114,9 +114,9 @@ public class HMM
 		return prob;
 	}
 
-	public void computeBaumWelch()
+	public double[][] computeBaumWelch()
 	{
-		if(oSeqs.size() == 0 || !dirtyBit) return;
+		if(oSeqs.size() == 0 || !dirtyBit) return null;
 		trained = true;
 		resetStates();
 		double[] cSequence = new double[oSeqs.get(0).length];
@@ -151,7 +151,9 @@ public class HMM
 				currentLogProb = oldLogProb;
             	break;
             }
-        }
+		}
+		
+		return alphaMatrix;
 	}
 
 
@@ -166,6 +168,38 @@ public class HMM
 		seqs.add(seq);
 		double[] cSeq = new double[seq.length];
 		double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seqs, cSeq);
+		double[] obsProbVec = new double[BMat[0].length];
+		for(int j = 0; j < AMat.length; j++){
+			double prob = 0;
+			for(int i = 0; i < AMat.length; i++){
+				prob += alphaMatrix[seq.length-1][i] * AMat[i][j];	
+			}
+			for(int v = 0; v < obsProbVec.length; v++){
+				obsProbVec[v] += prob * BMat[j][v];
+			}
+		}
+
+		int mLikelyObs = -1;
+		double highestProb = Double.NEGATIVE_INFINITY;
+		for(int v = 0; v < obsProbVec.length; v++){
+			if(obsProbVec[v] > highestProb){
+				highestProb = obsProbVec[v];
+				mLikelyObs = v;
+			}
+		}
+
+		return mLikelyObs;
+	}
+
+	public int predictNextMove_wa(double[][] alphaMatrix)
+	{
+		//TODO
+		// we need to compare alpha - know distribution for every state
+		// from this state we want to get the most likely observation
+		Vector<int[]> seqs = new Vector<>(1);
+		seqs.add(seq);
+		double[] cSeq = new double[seq.length];
+		//double[][] alphaMatrix = alphaPass(AMat, BMat, piVec, seqs, cSeq);
 		double[] obsProbVec = new double[BMat[0].length];
 		for(int j = 0; j < AMat.length; j++){
 			double prob = 0;

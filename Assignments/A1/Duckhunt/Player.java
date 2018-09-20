@@ -22,6 +22,8 @@ class Player {
     // if we successfully shot a bird there will the species
     private int[] birdShot;
 
+    private HMM[] shootModels;
+
     private int currRound = -1;
     private int counter = 0;
     /**
@@ -52,6 +54,7 @@ class Player {
             birdShot = new int[20];
             counter = 0;
             Arrays.fill(birdShot,-1);
+            shootModels = new HMM[20];
         }
 
         counter += pState.getNumNewTurns();
@@ -61,9 +64,38 @@ class Player {
             // we decided to shoot not in round 0
             return cDontShoot;
         }
-        else{
+        else
+        {
+
+
+
+            for(int i = 0; i < pState.getNumBirds(); i++)
+            {
+                if(pState.getBird(i).isDead()) continue;
+                int[] seq = new int[pState.getBird(i).getSeqLength()];
+                for(int j = 0; j < seq.length; j++){
+                    seq[j] = pState.getBird(i).getObservation(j);
+                }
+                double maxProb = Double.NEGATIVE_INFINITY;
+                int maxIndex;
+                for(int j = 0; speciesArray.length; j++){
+                    double prob = speciesArray[i].computeProb(seq);
+                    if(prob > maxProb){
+                        maxProb = prob;
+                        maxIndex = j;
+                    }
+                }
+                if(maxIndex == Constants.SPECIES_BLACK_STORK) continue;
+                shootModels[i].addSeq(seq);
+                double[][] alphaMatrix = shootModels[i].computeBaumWelch();
+                int move = shootModels[i].predictNextMove_wa(alphaMatrix);
+                return new Action(i,move);
+            }
+        }
+
+
             // it is time to hunt
-            double maxProb = Double.NEGATIVE_INFINITY;
+            /*double maxProb = Double.NEGATIVE_INFINITY;
             int maxIndex = -1;
             int maxSpecies = -1;
             int[] maxSeq = null;
@@ -89,14 +121,14 @@ class Player {
                     maxIndex = i;
                     maxSpecies = probIndex;
                     maxSeq = seq;
-                }
-            }
+                }*/
+            
 
-            if(maxIndex < 0) return cDontShoot;
+            /*if(maxIndex < 0) return cDontShoot;
 
             int move = speciesArray[maxSpecies].predictNextMove(maxSeq);
             System.err.println("Shooting on " + maxIndex + ", Species " + maxSpecies + ", Prob " + maxProb);
-            return new Action(maxIndex, move);
+            return new Action(maxIndex, move);*/
         
             // first we wait for timestep 10 to get a meaningful result
             /*if(currRound > 9){
@@ -122,15 +154,14 @@ class Player {
                 }
             }*/
         
-        }
+    }
 
     // This line chooses not to shoot.
 //    return cDontShoot;
 
         // This line would predict that bird 0 will move right and shoot at it.
         // return Action(0, MOVE_RIGHT);
-    }
-
+    
     private int[] getBirdSeq(Bird b)
     {
         int[] ret = new int[b.getSeqLength()];

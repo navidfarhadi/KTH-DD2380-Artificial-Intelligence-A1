@@ -1,0 +1,81 @@
+My score: 0
+Guesses for round 0
+
+2 5 3 3 4 4 0 
+Reveal for round 0
+1 0 1 1 3 1 1 
+time: 763
+My score: -7
+My score: -7
+Guesses for round 1
+
+3 0 0 1 0 0 0 0 0 1 0 0 0 3 0 3 
+Reveal for round 1
+0 4 4 1 0 4 0 4 0 1 4 4 0 3 0 0 
+time: 885
+My score: -7
+My score: -7
+Guesses for round 2
+
+4 4 4 0 3 4 0 0 4 0 4 4 0 4 4 4 
+Reveal for round 2
+4 4 1 0 3 4 0 2 4 0 3 4 0 4 4 4 
+time: 817
+My score: 3
+My score: 3
+Guesses for round 3
+
+4 4 4 3 3 4 4 4 0 4 4 
+Reveal for round 3
+1 1 4 3 3 4 4 3 1 3 1 
+time: 831
+My score: 2
+My score: 2
+Guesses for round 4
+
+0 4 4 1 0 4 0 3 4 4 0 4 4 4 3 4 1 3 3 
+Reveal for round 4
+0 4 4 1 2 3 0 3 1 4 0 4 4 4 3 1 1 3 3 
+time: 791
+My score: 13
+My score: 13
+Guesses for round 5
+
+4 0 4 0 4 4 4 4 3 0 4 3 4 4 3 0 4 0 0 0 
+Reveal for round 5
+4 0 1 0 1 4 4 4 3 2 1 3 4 4 5 0 4 0 0 2 
+time: 810
+My score: 21
+My score: 21
+Guesses for round 6
+
+4 4 3 3 4 4 1 4 4 4 3 0 4 3 3 4 0 3 0 
+Reveal for round 6
+4 4 3 2 4 4 1 3 4 4 3 0 4 3 3 1 0 2 2 
+time: 784
+My score: 30
+My score: 30
+Guesses for round 7
+
+4 0 0 0 3 4 0 3 3 
+Reveal for round 7
+4 2 0 0 2 4 2 3 3 
+time: 782
+My score: 33
+My score: 33
+Guesses for round 8
+
+3 4 4 4 4 4 4 4 
+Reveal for round 8
+3 1 1 4 1 4 4 4 
+time: 761
+My score: 35
+My score: 35
+Guesses for round 9
+
+4 3 3 4 4 4 4 0 4 3 0 4 
+Reveal for round 9
+4 3 3 1 4 4 1 0 1 3 0 1 
+time: 747
+My score: 39
+Final score: 39
